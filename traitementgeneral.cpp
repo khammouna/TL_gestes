@@ -62,7 +62,7 @@ int main( int argc, char** argv )
     
         //Initialisation pour findContours
         Mat canny_output, frame;
-        vector<vector<Point> > contours;
+        vector<vector<Point>> contours;
         vector<Vec4i> hierarchy;
         vector<vector<Point>> tabcontfil;
 
@@ -92,11 +92,12 @@ int main( int argc, char** argv )
                 //imwrite( "contour.png", zliste );
                 //Fin findContours
 
+                Point centre(canny_output.cols/2, canny_output.rows/2);
                 int longmax = 0;
                 int index = 1;
                 int longueur = 0;
                 vector<Point> z;
-                vector<Point> z_reconstructed;
+                vector<Point> z_reconstructed(2*cmax+1);
                 Point coord;
                 vector<complex<double>> coeffs2(2*cmax+1); 
                 vector<complex<double>> coeffs2r(2*cmax+1); 
@@ -130,91 +131,36 @@ int main( int argc, char** argv )
 
 
                 // z_comp is the complex representation of z
-                typedef complex<double> intComp;
-                typedef vector<intComp> complexVector;
-                complexVector z_comp;
+                vector<complex<double>> z_comp;
+                //complex<double> centre(500, -300);
                 for( int j = 1; j < longmax -1 ; j++){  
-                        intComp z_point(z[j].x, z[j].y); 
+                        complex<double> z_point(z[j].x, z[j].y); 
                         z_comp.push_back(z_point);
                 } 
-
-
-
                 coeffs2 = coeff_fourier(z_comp, cmax);
                 //dft(z_comp, coeffs2, DFT_COMPLEX_OUTPUT + DFT_SCALE);
                 /*
                 for(int j = 1; j<cmax+1; j++ ){
                   coeffs2r[j+cmax] = coeffs2[j];
+                  cout<<coeffs2[j+cmax]<<endl;
                 }
                  for(int j = 1; j<cmax+1; j++ ){
-                     coeffs2r[j] = coeffs2[j+cmax];
+                   coeffs2r[j] = coeffs2[j+cmax];
+                }                
+  
+
+                dft(coeffs2r, coeffs2r, DFT_INVERSE);
+                */
+                dft(coeffs2, coeffs2r, DFT_INVERSE + DFT_SCALE);
+                for( size_t j = 1; j < coeffs2r.size() ; j++){
+                    if(coeffs2r[j].real() != 0){
+                Point z_point(coeffs2r[j].real()*500 + centre.x, coeffs2r[j].imag()*500 + centre.y);
+                z_reconstructed.push_back(z_point);
+                    }
+                    else{Point z_point(0,0);
+                    z_reconstructed.push_back(z_point);
+                }
                   }
-                */
-                  dft(coeffs2, z_reconstructed, DFT_INVERSE + DFT_SCALE);
-                  /*
-                dft(coeffs2, coeffs3, DFT_INVERSE + DFT_SCALE);
-                for( size_t j = 1; j < coeffs3.size() -1 ; j++){  
-                        Point point(coeffs3[j].real()*coeffs3.size(),coeffs3[j].imag()*coeffs3.size());
-                        z_reconstructed.push_back(point);
-                } 
-                //normalize(coeffs3, coeffs3, 0, 1, CV_MINMAX);
-                */
-
-                //calcul des coeffs de fourier complex des contours               
-                /* coeffs2 = coeff_fourier2(z_comp, longmax);
-                   for(auto& point: coeffs2){
-                   cout<< complex<double>(point.real(), point.imag()) <<endl;
-                   }
-                   */
-                /*
-                //calcul de la transformée de fourier inverse pour vérification
-                vector<vector<Point> > contour_reconstruit;
-                contour_reconstruit = fourier_inverse(coeffs2, 2*cmax);
-
-                for (auto& matrix: contour_reconstruit){
-                for(auto& point: matrix) {
-                cout<< complex<double>(point.x , point.y)<<endl;;
-                }}
-
-                //on plotte 
-                Mat reconstruit = Mat::zeros(canny_output.rows, canny_output.cols, CV_8UC3); 
-                drawContours(reconstruit, contour_reconstruit, -1, color,2,2);
-                imshow("contour_reconstruit",reconstruit);
-                imwrite( "contours_associes_aux_coeff_normalises.pgm", reconstruit);
-
-
-                //FUNCTION dfdir
-                //On calcule les coeffs de fourier
-
-                complexVector coeff, coeffpi, z_comp_neg, contfil, contfilpi;
-                coeff=coeff_fourier(z_comp, cmax, longmax, z);
-                for(auto& point: coeff){
-                cout<< complex<double>(point.real(), point.imag()) <<endl;
-                }
-
-                for( int j = 1; j < longmax -1 ; j++){
-                intComp z_point(-z[j].x, -z[j].y);
-                z_comp_neg.push_back(z_point);
-                }
-
-                coeffpi=coeff_fourier(z_comp_neg, cmax,longmax, z);
-
-
-                //On calcule le contour de fourier inverse pour vérifier
-                contfil=dfinv(coeff,cmax,N);
-                contfilpi = dfinv(coeffpi, cmax, N);
-
-                Point p;
-                vector<Point> cont;
-
-                for(size_t j = 1; j < contfil.size(); j++){
-                p.x = contfil[j].real();
-                p.y = contfil[j].imag();
-                cont.push_back(p);
-                }
-                tabcontfil.push_back(cont);
-*/
-
 
                 //On draw le contour reconstruit
                 vector<vector<Point>> drawReconstructedContour;
@@ -222,22 +168,10 @@ int main( int argc, char** argv )
                 Mat myFrame2 = Mat::zeros(canny_output.rows, canny_output.cols, CV_8UC3);
                 drawContours(myFrame2,drawReconstructedContour,0,color,2, 8, hierarchy, 0, Point());
                 imwrite( "contourReconstruit"+ to_string(n) +".png", myFrame2 );
-
+                namedWindow( "Display window", WINDOW_AUTOSIZE );// Create a window for display.
+                imshow( "Display window", myFrame2 );   
+  
                 }
-                
-
-                
-            
-                /*
-                //Mat reconstruit;
-                Mat reconstruit = Mat::zeros(canny_output.rows, canny_output.cols, CV_8UC3); 
-                //drawContours(reconstruit, canny_output, -1, color, 2, 2);
-                drawContours(reconstruit, tabcontfil, -1, color, 2, 2);
-                namedWindow( "Test", CV_WINDOW_AUTOSIZE );
-                imshow("Test", reconstruit);
-                imwrite( "contours_associes_aux_coeff_normalises.pgm", reconstruit );
-                //imwrite( "contours_associes_aux_coeff_normalises.pgm", tabcontfil);
-                */
                 
 
 

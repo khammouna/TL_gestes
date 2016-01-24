@@ -12,6 +12,7 @@ vector<complex<double>> coeff_fourier(vector<complex<double>> z_comp, int cmax){
 	vector<complex<double>> z_temp;
 	vector<complex<double>> z_diff;
 	vector<complex<double>> z_coeff;
+	Point centre(500, -300);
 	complex<double> z_moy;
 	double longc = z_comp.size();
 
@@ -22,23 +23,22 @@ vector<complex<double>> coeff_fourier(vector<complex<double>> z_comp, int cmax){
    	z_moy = complex<double>(z_moy.real()/longc, z_moy.imag()/longc);
 
 	//on calcule les coefficients de fourier
-   	//ajout d'un coefficient 10 à la moyenne sinon le décalage est trop grand
 	for( int j = 1; j < longc ; j++){
       complex<double> z_point2(z_comp[j].real() - z_moy.real(), z_comp[j].imag() - z_moy.imag());
       //complex<double> z_point2(z_comp[j].real() , z_comp[j].imag());
       z_diff.push_back(z_point2);
    }
 
-	//dft(z_diff, coeff, DFT_SCALE + DFT_COMPLEX_OUTPUT);
-	dft(z_diff, z_temp, DFT_SCALE + DFT_COMPLEX_OUTPUT);
+	dft(z_diff, coeff, DFT_SCALE + DFT_COMPLEX_OUTPUT);
+	//dft(z_diff, z_temp, DFT_SCALE + DFT_COMPLEX_OUTPUT);
+	/*
 	for(int j = 1; j<cmax+1; j++ ){
     coeff[j+cmax] = z_temp[j];
     }
-
     for(int j = 1; j<cmax+1; j++ ){
     coeff[j] = z_temp[j+cmax];
     }
-
+    */
 	//invariance vis a vis du sens de parcours
 	if(abs(coeff[cmax - 1])<abs(coeff[cmax-1])){
 	reverse(coeff.begin(), coeff.end());
@@ -51,19 +51,19 @@ vector<complex<double>> coeff_fourier(vector<complex<double>> z_comp, int cmax){
 	for (auto& complex: coeff){
 	complex *= exp_comp;
 	}
-	
+	/*
 	double theta = arg(coeff[cmax+1]);
 	
 	for (int i = 0; i < 2*cmax-1 ; ++i){
 	complex<double> exp_comp2 = exp(complex<double>(0,-theta*(-cmax+i)));
 	coeff[i] *= exp_comp2;
 	}
-		
-	double d1 = abs(coeff[cmax+1]);
 	
+		
+	double d1 = abs(coeff[cmax+1]);	
 	for(auto& comp : coeff){
 	comp /= d1;
 	}
-	
+	*/
 	return (coeff);
 }
