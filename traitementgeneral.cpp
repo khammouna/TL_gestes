@@ -27,6 +27,7 @@ int thresh =63 ;
 //int max_thresh = 255;
 RNG rng(12345);
 Scalar color(255,255,255);
+vector<Vec4i> hierarchy;
 /// Function header
 void thresh_callback(int, void* );
 
@@ -36,7 +37,7 @@ int main( int argc, char** argv )
         //Declaration des variables
         int cmax(15);
         //int  N(200), cmax(15);
-        int Nomb = 20;
+        int Nomb = 3;
         vector<Mat> liste_image;
         /*
         //Chargement des prototypes
@@ -49,10 +50,10 @@ int main( int argc, char** argv )
         dico_prototypes.push_back(prototype_avance_1);
         */
         //Création de la liste d'images
-        for ( int d=1; d<Nomb-1;d++){
+        for ( int d=1; d<Nomb+1;d++){
                 Mat image;
-                string filename = "resultat2_avance" + to_string(d) +".pgm";
-                //string filename = "../test/test_gestes" + to_string(d) +".pgm";
+                //string filename = "resultat2_avance" + to_string(d) +".pgm";
+                string filename = "hand" + to_string(d) +".png";
                 image = imread(filename.c_str(),1);   // Read the file
                 liste_image.push_back(image);
                 //liste=dir('*.pgm');
@@ -63,10 +64,9 @@ int main( int argc, char** argv )
         //Initialisation pour findContours
         Mat canny_output, frame;
         vector<vector<Point>> contours;
-        vector<Vec4i> hierarchy;
         vector<vector<Point>> tabcontfil;
 
-        for  (int n=1 ; n<Nomb-2 ; n++){
+        for  (int n=1 ; n<Nomb;++n){
                 //Find Contours instead of bwboundaries
                 //zliste=bwboundaries(BW,8,'noholes');
                 // Convert image to gray and blur it
@@ -153,11 +153,12 @@ int main( int argc, char** argv )
                 */
                 dft(coeffs2, coeffs2r, DFT_INVERSE + DFT_SCALE);
                 for( size_t j = 1; j < coeffs2r.size() ; j++){
-                    if(coeffs2r[j].real() != 0){
+                    if(coeffs2r[j].imag() != 0){
                 Point z_point(coeffs2r[j].real()*500 + centre.x, coeffs2r[j].imag()*500 + centre.y);
                 z_reconstructed.push_back(z_point);
                     }
-                    else{Point z_point(0,0);
+                    else{
+                        Point z_point(0,0);
                     z_reconstructed.push_back(z_point);
                 }
                   }

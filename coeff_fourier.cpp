@@ -29,6 +29,19 @@ vector<complex<double>> coeff_fourier(vector<complex<double>> z_comp, int cmax){
       z_diff.push_back(z_point2);
    }
 
+   for(int i = 0; i<2*cmax+1; ++i){
+   	complex<double> exp_four;
+   	complex<double> a(0,0);
+
+   for (int j = 0 ; j < longc; ++j){   
+         exp_four = exp(complex<double>(0,-2.0*j*(i-cmax)*M_PI/longc));
+         a+= (z_diff[j])*exp_four;
+      }
+
+      coeff[i] = a /complex<double>(longc,0);
+   } 
+
+
 	dft(z_diff, coeff, DFT_SCALE + DFT_COMPLEX_OUTPUT);
 	//dft(z_diff, z_temp, DFT_SCALE + DFT_COMPLEX_OUTPUT);
 	/*
@@ -54,16 +67,15 @@ vector<complex<double>> coeff_fourier(vector<complex<double>> z_comp, int cmax){
 	/*
 	double theta = arg(coeff[cmax+1]);
 	
-	for (int i = 0; i < 2*cmax-1 ; ++i){
+	for (int i = 0; i < 2*cmax+1 ; ++i){
 	complex<double> exp_comp2 = exp(complex<double>(0,-theta*(-cmax+i)));
 	coeff[i] *= exp_comp2;
 	}
-	
-		
+	*/	
 	double d1 = abs(coeff[cmax+1]);	
 	for(auto& comp : coeff){
 	comp /= d1;
 	}
-	*/
+	
 	return (coeff);
 }
